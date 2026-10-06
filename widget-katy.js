@@ -1047,7 +1047,8 @@
             inlineBtn.style.setProperty('min-height', '0', 'important');
             inlineBtn.style.setProperty('width', '100%', 'important');
             // Ótica Katy: provador logo abaixo do Comprar, colado nele
-            inlineBtn.style.setProperty('margin-top', '6px', 'important');
+            // o .product-form__controls é grid com gap de 14px: margem negativa deixa ~6px entre os dois
+            inlineBtn.style.setProperty('margin-top', '-8px', 'important');
             inlineBtn.style.setProperty('margin-bottom', '0', 'important');
         }
         window.addEventListener('resize', syncInlineButtonShape);
