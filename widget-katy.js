@@ -1046,7 +1046,9 @@
             inlineBtn.style.setProperty('height', compactHeight + 'px', 'important');
             inlineBtn.style.setProperty('min-height', '0', 'important');
             inlineBtn.style.setProperty('width', '100%', 'important');
-            inlineBtn.style.setProperty('margin-bottom', '8px', 'important');
+            // Ótica Katy: provador logo abaixo do Comprar, colado nele
+            inlineBtn.style.setProperty('margin-top', '6px', 'important');
+            inlineBtn.style.setProperty('margin-bottom', '0', 'important');
         }
         window.addEventListener('resize', syncInlineButtonShape);
 
@@ -1083,8 +1085,8 @@
                 nativeBuyButton = buyBtn;
                 // No Dawn e derivados, mantém provador e comprar no mesmo grupo visual.
                 const buttons = buyBtn.closest('.product-form__buttons');
-                if (buttons) buttons.insertBefore(inlineBtn, buttons.firstChild);
-                else buyBtn.parentNode.insertBefore(inlineBtn, buyBtn);
+                if (buttons) buttons.appendChild(inlineBtn);
+                else buyBtn.parentNode.insertBefore(inlineBtn, buyBtn.nextSibling);
                 syncInlineButtonShape();
                 if (typeof ResizeObserver !== 'undefined') {
                     new ResizeObserver(syncInlineButtonShape).observe(buyBtn);
