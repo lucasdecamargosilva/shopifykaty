@@ -127,6 +127,13 @@
     // Parcelamento (Dooca): plano de cartão do produto (fallback: texto da página).
     function getInstallment() {
         // Shopify Katy: preserva parcelas, valor e juros publicados pelo tema.
+        // Tema da Katy: <div class="product-payment-info">Parcele em até 6x sem juros de R$ 26,65</div>
+        var katyPay = document.querySelector('main .product-payment-info');
+        if (katyPay && !katyPay.closest('#q-modal-ia')) {
+            var kt = (katyPay.textContent || '').replace(/\s+/g, ' ').trim();
+            var km = kt.match(/(\d+)\s*x\s*(sem juros)?\s*de\s*(R\$\s*[\d.,]+)/i);
+            if (km) return km[1] + 'x de ' + km[3] + (km[2] ? ' sem juros' : '');
+        }
         var installments = document.querySelectorAll('main .installments');
         for (var i = 0; i < installments.length; i++) {
             var node = installments[i];
