@@ -1285,6 +1285,41 @@
             return faceDetectPromise;
         }
 
+        // ── Variante selecionada (Shopify): a foto da cor escolhida vira a referência principal
+        // e as fotos de capa das OUTRAS cores saem da lista (antes ia a galeria inteira, todas
+        // as cores misturadas, e a principal era sempre a 1ª foto da galeria).
+        var _plProductJson = null;
+        async function plProductJson() {
+            if (_plProductJson) return _plProductJson;
+            var m = location.pathname.match(/\/products\/([^\/?#]+)/); if (!m) return null;
+            try { var r = await fetch('/products/' + m[1] + '.js', { signal: AbortSignal.timeout(5000) }); if (r.ok) _plProductJson = await r.json(); } catch (e) {}
+            return _plProductJson;
+        }
+        function plImgKey(u) {
+            var f = String(u || '').split('?')[0].split('/').pop() || '';
+            return f.replace(/_(\d+x\d*|\d*x\d+)(?=\.)/i, '').replace(/\.(jpe?g|png|webp|avif|gif)$/i, '').toLowerCase();
+        }
+        async function plSelectedVariant() {
+            var p = await plProductJson(); if (!p || !p.variants || p.variants.length < 2) return null;
+            // tema da Katy usa radio (um por cor): pega o MARCADO; senão select/hidden; por fim ?variant= da URL
+            var F = 'form[action*="/cart/add"] ';
+            var el = document.querySelector(F + '[name="id"]:checked') || document.querySelector(F + 'select[name="id"]') || document.querySelector(F + 'input[type="hidden"][name="id"]');
+            var id = (el && el.value) || new URLSearchParams(location.search).get('variant');
+            var v = p.variants.filter(function (x) { return String(x.id) === String(id); })[0]; if (!v) return null;
+            var img = v.featured_image && v.featured_image.src ? String(v.featured_image.src) : '';
+            if (img.indexOf('//') === 0) img = 'https:' + img;
+            var meu = plImgKey(img);
+            var outras = p.variants.filter(function (x) { return x !== v && x.featured_image && x.featured_image.src; })
+                .map(function (x) { return plImgKey(x.featured_image.src); }).filter(function (k) { return k && k !== meu; });
+            return { title: v.title, img: img, outras: outras };
+        }
+        function plApplyVariant(urls, sv) {
+            if (!sv) return urls;
+            var out = (urls || []).filter(function (u) { return sv.outras.indexOf(plImgKey(u)) === -1; });
+            if (sv.img) { var k = plImgKey(sv.img); out = out.filter(function (u) { return plImgKey(u) !== k; }); out.unshift(/cdn\.shopify|\/cdn\/shop\//.test(sv.img) ? sv.img + (sv.img.indexOf('?') > -1 ? '&' : '?') + 'width=1024' : upgradeImgUrl(sv.img)); }
+            return out;
+        }
+
         function openModal() {
             try { startFaceDetect(); } catch (e) {}
             plTrackOpen();
@@ -1901,11 +1936,12 @@
                     try { phoneInput.focus(); } catch(_) {}
                     return;
                 }
+let _plSv = null; try { _plSv = await plSelectedVariant(); } catch (_) {}
 const fd = new FormData();
                 fd.append('person_image', await toJpeg(userPhoto), 'person.jpg');
                 fd.append('whatsapp', '55' + phoneInput.value.replace(/\D/g, ''));
                 fd.append('phone_raw', phoneInput.value);
-                fd.append('product_name', prodName);
+                fd.append('product_name', prodName + (_plSv && _plSv.title && _plSv.title !== 'Default Title' && prodName.toLowerCase().indexOf(String(_plSv.title).toLowerCase()) === -1 ? ' - ' + _plSv.title : ''));
                 fd.append('product_url', window.location.href);
                 fd.append('product_type', currentProduct.category);
                 fd.append('product_fit', currentProduct.fit);
@@ -1934,7 +1970,8 @@ const fd = new FormData();
                         setTimeout(function () { reject(new Error('Tempo excedido ao analisar as referências.')); }, 30000);
                     })]);
 
-                    allProdImgs = (_faceUrls && _faceUrls.length ? _faceUrls : allProdImgs).slice(0,20);
+                    allProdImgs = plApplyVariant((_faceUrls && _faceUrls.length ? _faceUrls : allProdImgs).slice(0,20), _plSv).slice(0,20);
+                console.log('[PL Katy] variante:', _plSv ? _plSv.title : '(sem variante)', '| principal:', allProdImgs[0]);
                 console.log('[PL Katy] Enviando', allProdImgs.length, 'fotos do produto');
                 let _primaryDone = false, _slot = 1;
                     for (let _pi = 0; _pi < allProdImgs.length; _pi++) {
