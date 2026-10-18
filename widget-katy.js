@@ -121,7 +121,18 @@
         // add via AJAX só adicionava por baixo, sem abrir o carrinho.
         try { var _wm = document.getElementById('q-modal-ia'); if (_wm) _wm.style.display = 'none'; } catch (e) {}
         try { document.body.style.overflow = ''; } catch (e) {}
-        try { sb.click(); } catch (e) {}
+        // 18/10/2026 (pedido do Cesar/Katy): 95% das vendas são com lente de grau, então o botão NÃO adiciona
+        // ao carrinho — volta pra página do produto e destaca o "Escolher minhas lentes" do tema.
+        try {
+            var _lt = document.querySelector('#app-lentes-open') || sb;
+            _lt.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            var _sh = _lt.style.boxShadow, _tr = _lt.style.transition;
+            _lt.style.transition = 'box-shadow .3s ease';
+            var _n = 0, _iv = setInterval(function () {
+                _lt.style.boxShadow = (_n % 2 === 0) ? '0 0 0 4px rgba(17,17,17,.35)' : (_sh || '');
+                if (++_n > 5) { clearInterval(_iv); _lt.style.boxShadow = _sh || ''; _lt.style.transition = _tr || ''; }
+            }, 350);
+        } catch (e) {}
     }
     // Mostra o botão no resultado + preenche o preço.
     // Parcelamento (Dooca): plano de cartão do produto (fallback: texto da página).
@@ -175,6 +186,7 @@
         if (sc && scn && prodName) { scn.textContent = scarcityCount(prodName); sc.style.display = 'flex'; }
         var seals = document.getElementById('q-seals'); if (seals) seals.style.display = 'flex';
         btn.style.display = findStoreBuyBtn() ? 'flex' : 'none';
+        btn.textContent = 'Escolher minhas lentes';
         btn.onclick = buyNow;
     }
 
