@@ -2416,3 +2416,28 @@ const fd = new FormData();
     }
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', watch); else watch();
 })();
+
+/* ── PL_ESTOQUE v1 (20/10/2026, Katy) ─────────────────────────────────────────────
+   Produto sem estoque na Shopify (nenhuma variação disponível) não mostra o provador:
+   esconde o selo e o botão. Consulta /products/<handle>.js da própria loja.
+   Se a consulta falhar, não esconde nada (melhor mostrar do que sumir por erro de rede). */
+(function () {
+    if (window.__plEstoqueKaty) return; window.__plEstoqueKaty = 1;
+    var m = window.location.pathname.match(/\/products\/([^\/?#]+)/);
+    if (!m) return;
+    function esconde() {
+        if (document.getElementById('pl-sem-estoque-css')) return;
+        var st = document.createElement('style'); st.id = 'pl-sem-estoque-css';
+        st.textContent = '#q-open-ia,.q-btn-trigger-ia,.q-btn-inline-provador,[class*="q-inline-wrapper"]{display:none!important}';
+        (document.head || document.documentElement).appendChild(st);
+        try { console.log('[PL] produto sem estoque: provador escondido'); } catch (e) {}
+    }
+    fetch('/products/' + m[1] + '.js', { credentials: 'same-origin' })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (p) {
+            if (!p || !Array.isArray(p.variants)) return;
+            var temEstoque = p.available === true || p.variants.some(function (v) { return v && v.available; });
+            if (!temEstoque) esconde();
+        })
+        .catch(function () {});
+})();
