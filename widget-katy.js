@@ -123,15 +123,15 @@
         try { document.body.style.overflow = ''; } catch (e) {}
         // 18/10/2026 (pedido do Cesar/Katy): 95% das vendas são com lente de grau, então o botão NÃO adiciona
         // ao carrinho — volta pra página do produto e destaca o "Escolher minhas lentes" do tema.
+        // 19/10/2026: além de voltar pra página, CLICA no "Escolher minhas lentes" do tema (abre o fluxo de lentes).
         try {
-            var _lt = document.querySelector('#app-lentes-open') || sb;
-            _lt.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            var _sh = _lt.style.boxShadow, _tr = _lt.style.transition;
-            _lt.style.transition = 'box-shadow .3s ease';
-            var _n = 0, _iv = setInterval(function () {
-                _lt.style.boxShadow = (_n % 2 === 0) ? '0 0 0 4px rgba(17,17,17,.35)' : (_sh || '');
-                if (++_n > 5) { clearInterval(_iv); _lt.style.boxShadow = _sh || ''; _lt.style.transition = _tr || ''; }
-            }, 350);
+            var _lt = document.querySelector('#app-lentes-open');
+            if (_lt) {
+                _lt.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                setTimeout(function () { try { _lt.click(); } catch (e) {} }, 350);
+            } else {
+                sb.click();   // página sem o botão de lentes: comportamento antigo (comprar)
+            }
         } catch (e) {}
     }
     // Mostra o botão no resultado + preenche o preço.
