@@ -965,6 +965,7 @@ setInterval(function(){var el=document.getElementById('q-step-error');if(!el)ret
         }
         // --- LENTE NAO PROVA (28/10/2026, Lucas): produto que É a lente (lente de grau, par de lentes,
         // lente de contato, kit lente...) não mostra o provador. Óculos/armação "com lente X" e clip-on seguem normais.
+        // Katy: lentes Zeiss vêm como "Multifocal Zeiss ..." e "Upgrade lente fina do brinde".
         // Olha o nome (h1/og:title) e o slug da URL — tem loja cujo título não diz "lente" mas o slug diz.
         if ((function plEhPaginaDeLente() {
             try {
@@ -976,7 +977,7 @@ setInterval(function(){var el=document.getElementById('q-step-error');if(!el)ret
                 for (var i = 0; i < lista.length; i++) {
                     var t = norm(lista[i]);
                     if (!t || /\bclip\b|clipon/.test(t)) continue;
-                    if (/^(lentes?|par de lentes?|kit (de )?lentes?)\b/.test(t) && !/\boculos\b/.test(t)) return true;
+                    if (/^(lentes?|par de lentes?|kit (de )?lentes?|multifocal|upgrade lente)\b/.test(t) && !/\boculos\b/.test(t)) return true;
                     if (/\blentes? (de grau|com grau|oftalmicas?|multifoca(l|is)|transitions|antirreflexo|anti reflexo|de contato|de descanso|de leitura|monofoca(l|is)|visao simples)\b|\bkit (de )?lentes?\b|\bpar de lentes?\b/.test(t)
                         && !/\b(oculos|armacao|solar|sol)\b/.test(t)) return true;
                 }
